@@ -32,7 +32,7 @@ const EQUIPMENT = [
 
 const LIMITATIONS = ['Lower Back', 'Knees', 'Shoulders', 'None']
 
-export default function OnboardingScreen() {
+export default function OnboardingScreen({ onComplete }) {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [step, setStep] = useState(0)
@@ -86,12 +86,21 @@ export default function OnboardingScreen() {
 
       await supabase.from('user_profiles').upsert(dbProfile, { onConflict: 'user_id' })
 
-      const result = await generateProgram(dbProfile)
-      await saveProgramToDb(user.id, result.program)
+      // Profile saved — tell the app so it won't loop back to onboarding
+      onComplete?.()
+
+      try {
+        const result = await generateProgram(dbProfile)
+        await saveProgramToDb(user.id, result.program)
+      } catch (aiErr) {
+        console.error('AI program generation failed:', aiErr)
+        // Profile is saved, user can generate a program later from the AI Coach tab
+      }
 
       navigate('/home', { replace: true })
     } catch (err) {
       console.error('Onboarding error:', err)
+      onComplete?.()
       navigate('/home', { replace: true })
     } finally {
       setGenerating(false)

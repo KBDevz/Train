@@ -45,7 +45,7 @@ function AppRoutes() {
   }
 
   if (!user) return <AuthScreen />
-  if (!hasProfile) return <OnboardingScreen />
+  if (!hasProfile) return <OnboardingScreen onComplete={() => setHasProfile(true)} />
 
   return (
     <AppShell>
