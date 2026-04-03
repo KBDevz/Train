@@ -18,6 +18,7 @@ export default function WorkoutScreen() {
 
   const [sessionId, setSessionId] = useState(null)
   const [elapsed, setElapsed] = useState(0)
+  const [started, setStarted] = useState(false)
   const [exerciseCards, setExerciseCards] = useState([])
   const [showFinish, setShowFinish] = useState(false)
   const [feedbackRating, setFeedbackRating] = useState(0)
@@ -25,8 +26,11 @@ export default function WorkoutScreen() {
   const [exSearch, setExSearch] = useState('')
   const [exercises, setExercises] = useState([])
   const [collapsedNotes, setCollapsedNotes] = useState({})
+  const [restTime, setRestTime] = useState(0)
+  const [lastSetTime, setLastSetTime] = useState(null)
   const timerRef = useRef(null)
   const startTimeRef = useRef(null)
+  const restTimerRef = useRef(null)
 
   // Load exercise library
   useEffect(() => {
@@ -45,13 +49,14 @@ export default function WorkoutScreen() {
         setSessionId(parsed.sessionId)
         setExerciseCards(parsed.exerciseCards)
         startTimeRef.current = new Date(parsed.startTime)
+        setStarted(true)
         return
       } catch (e) {
         localStorage.removeItem(CACHE_KEY)
       }
     }
 
-    // Start new session
+    // Pre-load session data but don't start timer yet
     initSession()
   }, [user])
 
@@ -94,15 +99,24 @@ export default function WorkoutScreen() {
     }
   }
 
-  // Timer
+  // Timer — only runs after user hits Start
   useEffect(() => {
+    if (!started) return
+    if (!startTimeRef.current) startTimeRef.current = new Date()
     timerRef.current = setInterval(() => {
-      if (startTimeRef.current) {
-        setElapsed(Math.floor((Date.now() - startTimeRef.current.getTime()) / 1000))
-      }
+      setElapsed(Math.floor((Date.now() - startTimeRef.current.getTime()) / 1000))
     }, 1000)
     return () => clearInterval(timerRef.current)
-  }, [])
+  }, [started])
+
+  // Rest timer — resets when a set is completed
+  useEffect(() => {
+    if (!lastSetTime) return
+    restTimerRef.current = setInterval(() => {
+      setRestTime(Math.floor((Date.now() - lastSetTime) / 1000))
+    }, 1000)
+    return () => clearInterval(restTimerRef.current)
+  }, [lastSetTime])
 
   // Cache to localStorage on every change
   useEffect(() => {
@@ -143,6 +157,9 @@ export default function WorkoutScreen() {
       if (set.completed) {
         if (!set.weight && set.lastWeight) set.weight = String(set.lastWeight)
         if (!set.reps && set.lastReps) set.reps = String(set.lastReps)
+        // Reset rest timer
+        setLastSetTime(Date.now())
+        setRestTime(0)
       }
       updated[cardIdx].sets[setIdx] = set
       return updated
@@ -216,16 +233,26 @@ export default function WorkoutScreen() {
           <div>
             <p className="font-semibold text-text text-sm">{day?.name || 'Workout'}</p>
             <div className="flex gap-3 mt-0.5">
-              <span className="text-xs text-text-secondary">⏱ {formatTime(elapsed)}</span>
-              <span className="text-xs text-text-secondary">📊 {convertWeight(totalVolume).toLocaleString()} {unitLabel}</span>
+              {started && <span className="text-xs text-text-secondary">⏱ {formatTime(elapsed)}</span>}
+              {started && lastSetTime && <span className="text-xs text-primary">🔄 Rest {formatTime(restTime)}</span>}
+              {started && <span className="text-xs text-text-secondary">📊 {convertWeight(totalVolume).toLocaleString()} {unitLabel}</span>}
             </div>
           </div>
-          <button
-            onClick={() => setShowFinish(true)}
-            className="h-9 px-4 bg-success text-bg text-sm font-semibold rounded-lg"
-          >
-            Finish
-          </button>
+          {!started ? (
+            <button
+              onClick={() => setStarted(true)}
+              className="h-9 px-5 bg-primary text-bg text-sm font-semibold rounded-lg"
+            >
+              Start
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowFinish(true)}
+              className="h-9 px-4 bg-success text-bg text-sm font-semibold rounded-lg"
+            >
+              Finish
+            </button>
+          )}
         </div>
       </div>
 
