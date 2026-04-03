@@ -2,11 +2,14 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useUnits } from '../contexts/UnitsContext'
 import { useNavigate } from 'react-router-dom'
-import { fetchPrograms, fetchProgramDetail } from '../lib/programService'
+import { fetchPrograms, fetchProgramDetail, saveProgramToDb } from '../lib/programService'
 import { fetchSessions, fetchStreak, fetchWeekSessions } from '../lib/sessionService'
+import { generateProgram } from '../lib/ai'
+import { supabase } from '../lib/supabase'
 import { Zap, Flame, Play, ChevronRight } from 'lucide-react'
 import SkeletonCard from '../components/SkeletonCard'
 import EmptyState from '../components/EmptyState'
+import LoadingSpinner from '../components/LoadingSpinner'
 
 export default function HomeScreen() {
   const { user } = useAuth()
@@ -19,6 +22,34 @@ export default function HomeScreen() {
   const [nextProgram, setNextProgram] = useState(null)
   const [recentSessions, setRecentSessions] = useState([])
   const [weeklyVolume, setWeeklyVolume] = useState([])
+  const [generating, setGenerating] = useState(false)
+  const [genError, setGenError] = useState('')
+
+  const handleGenerate = async () => {
+    setGenerating(true)
+    setGenError('')
+    try {
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single()
+
+      if (!profile) {
+        setGenError('No profile found. Please complete onboarding first.')
+        return
+      }
+
+      const result = await generateProgram(profile)
+      await saveProgramToDb(user.id, result.program)
+      await loadData()
+    } catch (err) {
+      console.error('Generate error:', err)
+      setGenError(err.message || 'Failed to generate program. Check your API key and try again.')
+    } finally {
+      setGenerating(false)
+    }
+  }
 
   const greeting = () => {
     const h = new Date().getHours()
@@ -126,19 +157,30 @@ export default function HomeScreen() {
           <ChevronRight size={20} className="text-white/60" />
         </button>
       ) : programs.length === 0 ? (
-        <button
-          onClick={() => navigate('/coach')}
-          className="w-full bg-gradient-to-r from-primary to-purple-500 text-white rounded-xl p-4 flex items-center gap-3"
-        >
-          <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-            <Zap size={20} />
-          </div>
-          <div className="text-left flex-1">
-            <p className="font-semibold">Generate My Program</p>
-            <p className="text-sm text-white/80">AI-powered, personalized for you</p>
-          </div>
-          <ChevronRight size={20} className="text-white/60" />
-        </button>
+        <div>
+          {generating ? (
+            <div className="bg-white rounded-xl p-6">
+              <LoadingSpinner message="Building your personalized program..." />
+            </div>
+          ) : (
+            <button
+              onClick={handleGenerate}
+              className="w-full bg-gradient-to-r from-primary to-purple-500 text-white rounded-xl p-4 flex items-center gap-3"
+            >
+              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                <Zap size={20} />
+              </div>
+              <div className="text-left flex-1">
+                <p className="font-semibold">Generate My Program</p>
+                <p className="text-sm text-white/80">AI-powered, personalized for you</p>
+              </div>
+              <ChevronRight size={20} className="text-white/60" />
+            </button>
+          )}
+          {genError && (
+            <p className="text-sm text-danger bg-danger/10 rounded-lg px-3 py-2 mt-2">{genError}</p>
+          )}
+        </div>
       ) : null}
 
       {/* Weekly Volume */}

@@ -25,6 +25,7 @@ export default function CoachScreen() {
   const [regenReason, setRegenReason] = useState('')
   const [showRegen, setShowRegen] = useState(false)
   const [goalSummary, setGoalSummary] = useState('')
+  const [error, setError] = useState('')
 
   useEffect(() => {
     if (user) loadData()
@@ -147,6 +148,7 @@ export default function CoachScreen() {
     if (!profile) { navigate('/onboarding'); return }
     setGenerating(true)
     setGenMessage('Regenerating your program...')
+    setError('')
     try {
       const result = await generateProgram(profile)
       await saveProgramToDb(user.id, result.program)
@@ -155,6 +157,7 @@ export default function CoachScreen() {
       await loadData()
     } catch (err) {
       console.error(err)
+      setError(err.message || 'Failed to generate program.')
     } finally {
       setGenerating(false)
       setGenMessage('')
@@ -343,6 +346,9 @@ export default function CoachScreen() {
             >
               <Zap size={16} /> Generate New Program
             </button>
+            {error && (
+              <p className="text-sm text-danger bg-danger/10 rounded-lg px-3 py-2">{error}</p>
+            )}
           </div>
         )}
       </div>
