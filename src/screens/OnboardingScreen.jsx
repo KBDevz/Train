@@ -182,6 +182,7 @@ export default function OnboardingScreen({ onComplete }) {
   const [deadlift, setDeadlift] = useState('')
   const chatEndRef = useRef(null)
   const inputRef = useRef(null)
+  const initRef = useRef(false)
 
   const [profile, setProfile] = useState({
     first_name: '',
@@ -206,7 +207,8 @@ export default function OnboardingScreen({ onComplete }) {
   })
 
   useEffect(() => {
-    // Show first step messages
+    if (initRef.current) return
+    initRef.current = true
     showStepMessages(0)
   }, [])
 
