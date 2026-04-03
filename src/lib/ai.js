@@ -3,38 +3,53 @@ const MODEL = 'claude-sonnet-4-20250514'
 const MAX_TOKENS = 4096
 
 function repairJson(text) {
-  // Extract the outermost JSON object
-  let jsonStr = text
   const startIdx = text.indexOf('{')
   if (startIdx === -1) throw new Error('No JSON found in Claude response')
-  jsonStr = text.slice(startIdx)
 
-  // Try parsing as-is first
-  try { return JSON.parse(jsonStr) } catch (e) { /* continue */ }
+  // Find the matching closing brace by tracking depth
+  let depth = 0
+  let inString = false
+  let escaped = false
+  let endIdx = -1
 
-  // Try to repair truncated JSON by closing open brackets/braces
-  let repaired = jsonStr
-  // Remove any trailing incomplete string value
+  for (let i = startIdx; i < text.length; i++) {
+    const ch = text[i]
+    if (escaped) { escaped = false; continue }
+    if (ch === '\\' && inString) { escaped = true; continue }
+    if (ch === '"') { inString = !inString; continue }
+    if (inString) continue
+    if (ch === '{') depth++
+    if (ch === '}') { depth--; if (depth === 0) { endIdx = i; break } }
+  }
+
+  // If we found a complete JSON object, extract just that
+  if (endIdx !== -1) {
+    return JSON.parse(text.slice(startIdx, endIdx + 1))
+  }
+
+  // Truncated response — try to repair by closing open brackets/braces
+  let repaired = text.slice(startIdx)
+  // Remove trailing incomplete values
   repaired = repaired.replace(/,\s*"[^"]*$/, '')
   repaired = repaired.replace(/,\s*$/, '')
 
-  // Count open/close brackets and braces
-  let openBraces = 0, openBrackets = 0
-  let inString = false, escaped = false
+  depth = 0
+  let openBrackets = 0
+  inString = false
+  escaped = false
   for (const ch of repaired) {
     if (escaped) { escaped = false; continue }
-    if (ch === '\\') { escaped = true; continue }
+    if (ch === '\\' && inString) { escaped = true; continue }
     if (ch === '"') { inString = !inString; continue }
     if (inString) continue
-    if (ch === '{') openBraces++
-    if (ch === '}') openBraces--
+    if (ch === '{') depth++
+    if (ch === '}') depth--
     if (ch === '[') openBrackets++
     if (ch === ']') openBrackets--
   }
 
-  // Close unclosed brackets/braces
   while (openBrackets > 0) { repaired += ']'; openBrackets-- }
-  while (openBraces > 0) { repaired += '}'; openBraces-- }
+  while (depth > 0) { repaired += '}'; depth-- }
 
   return JSON.parse(repaired)
 }
