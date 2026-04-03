@@ -101,32 +101,32 @@ export default function ExerciseLibraryScreen() {
     return (
       <div className="screen-container px-4 pt-4">
         <div className="flex items-center gap-2 mb-4">
-          <button onClick={() => setSelectedEx(null)} className="w-9 h-9 flex items-center justify-center rounded-lg bg-white border border-border">
+          <button onClick={() => setSelectedEx(null)} className="w-9 h-9 flex items-center justify-center rounded-lg bg-card border border-border text-text">
             <ChevronLeft size={20} />
           </button>
           <div>
-            <h1 className="text-lg font-bold text-slate-900">{selectedEx.name}</h1>
+            <h1 className="text-lg font-bold text-text">{selectedEx.name}</h1>
             <p className="text-xs text-muted">{selectedEx.muscle_group} · {selectedEx.movement_type}</p>
           </div>
         </div>
 
         {pr > 0 && (
-          <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-4 mb-4">
-            <p className="text-xs font-semibold text-orange-600 mb-1">Personal Record</p>
-            <p className="text-2xl font-bold text-slate-900">{convertWeight(pr)} {unitLabel}</p>
+          <div className="bg-primary-dim border border-primary/20 rounded-xl p-4 mb-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-1">Personal Record</p>
+            <p className="text-2xl font-bold text-text">{convertWeight(pr)} {unitLabel}</p>
           </div>
         )}
 
-        <h3 className="text-sm font-semibold text-slate-700 mb-2">Recent Sessions</h3>
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-2">Recent Sessions</h3>
         {Object.keys(sessions).length === 0 ? (
           <p className="text-sm text-muted py-4 text-center">No history for this exercise yet</p>
         ) : (
           Object.entries(sessions).slice(0, 5).map(([date, sets]) => (
-            <div key={date} className="bg-white rounded-xl p-3 mb-2">
+            <div key={date} className="bg-card border border-border rounded-xl p-3 mb-2">
               <p className="text-xs font-medium text-muted mb-1">{date}</p>
               <div className="flex flex-wrap gap-2">
                 {sets.sort((a, b) => a.set_number - b.set_number).map((set, i) => (
-                  <span key={i} className={`text-xs px-2 py-1 rounded ${set.completed ? 'bg-success-light text-slate-700' : 'bg-slate-100 text-muted'}`}>
+                  <span key={i} className={`text-xs px-2 py-1 rounded ${set.completed ? 'bg-success-light text-text-secondary' : 'bg-subtle text-muted'}`}>
                     {set.weight ? convertWeight(set.weight) : '—'}×{set.reps || '—'}
                   </span>
                 ))}
@@ -141,11 +141,11 @@ export default function ExerciseLibraryScreen() {
   return (
     <div className="screen-container px-4 pt-4">
       <div className="flex items-center gap-2 mb-4">
-        <button onClick={() => navigate(-1)} className="w-9 h-9 flex items-center justify-center rounded-lg bg-white border border-border">
+        <button onClick={() => navigate(-1)} className="w-9 h-9 flex items-center justify-center rounded-lg bg-card border border-border text-text">
           <ChevronLeft size={20} />
         </button>
-        <h1 className="text-lg font-bold flex-1">Exercise Library</h1>
-        <button onClick={() => setShowAdd(true)} className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center text-white">
+        <h1 className="text-lg font-bold text-text flex-1">Exercise Library</h1>
+        <button onClick={() => setShowAdd(true)} className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center text-bg">
           <Plus size={20} />
         </button>
       </div>
@@ -156,7 +156,7 @@ export default function ExerciseLibraryScreen() {
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full h-11 pl-10 pr-4 rounded-xl border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+          className="w-full h-11 pl-10 pr-4 rounded-xl border border-border bg-card text-text text-sm focus:outline-none focus:ring-1 focus:ring-primary/50 placeholder:text-muted"
           placeholder="Search exercises..."
         />
       </div>
@@ -168,7 +168,7 @@ export default function ExerciseLibraryScreen() {
             key={g}
             onClick={() => setFilter(g)}
             className={`px-3 h-8 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
-              filter === g ? 'bg-primary text-white' : 'bg-white border border-border text-slate-600'
+              filter === g ? 'bg-primary text-bg' : 'bg-card border border-border text-text-secondary'
             }`}
           >
             {g}
@@ -185,10 +185,10 @@ export default function ExerciseLibraryScreen() {
             <button
               key={ex.id}
               onClick={() => { setSelectedEx(ex); loadExHistory(ex.id) }}
-              className="w-full text-left px-3 py-3 rounded-xl bg-white flex items-center gap-3"
+              className="w-full text-left px-3 py-3 rounded-xl bg-card border border-border flex items-center gap-3 hover:bg-card-hover transition-colors"
             >
               <div className="flex-1">
-                <p className="text-sm font-medium text-slate-800">{ex.name}</p>
+                <p className="text-sm font-medium text-text">{ex.name}</p>
                 <p className="text-xs text-muted">{ex.muscle_group}{ex.is_global && ' · Global'}</p>
               </div>
             </button>
@@ -198,24 +198,24 @@ export default function ExerciseLibraryScreen() {
 
       {/* Add Exercise Modal */}
       {showAdd && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-6">
-          <div className="bg-white rounded-2xl w-full max-w-sm p-5">
+        <div className="fixed inset-0 bg-bg/80 z-50 flex items-center justify-center px-6">
+          <div className="bg-card border border-border rounded-2xl w-full max-w-sm p-5">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold">Add Exercise</h2>
+              <h2 className="text-lg font-bold text-text">Add Exercise</h2>
               <button onClick={() => setShowAdd(false)}><X size={20} className="text-muted" /></button>
             </div>
             <div className="space-y-3">
               <input
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                className="w-full h-12 px-4 rounded-xl border border-border text-base focus:outline-none focus:ring-2 focus:ring-primary/30"
+                className="w-full h-12 px-4 rounded-xl border border-border bg-card text-text text-base focus:outline-none focus:ring-1 focus:ring-primary/50 placeholder:text-muted"
                 placeholder="Exercise name"
                 autoFocus
               />
               <select
                 value={newGroup}
                 onChange={(e) => setNewGroup(e.target.value)}
-                className="w-full h-12 px-4 rounded-xl border border-border text-base bg-white focus:outline-none"
+                className="w-full h-12 px-4 rounded-xl border border-border text-base bg-card text-text focus:outline-none"
               >
                 {MUSCLE_GROUPS.filter(g => g !== 'All').map(g => (
                   <option key={g} value={g}>{g}</option>
@@ -224,7 +224,7 @@ export default function ExerciseLibraryScreen() {
               <select
                 value={newType}
                 onChange={(e) => setNewType(e.target.value)}
-                className="w-full h-12 px-4 rounded-xl border border-border text-base bg-white focus:outline-none"
+                className="w-full h-12 px-4 rounded-xl border border-border text-base bg-card text-text focus:outline-none"
               >
                 <option value="compound">Compound</option>
                 <option value="isolation">Isolation</option>
@@ -234,7 +234,7 @@ export default function ExerciseLibraryScreen() {
               <button
                 onClick={addExercise}
                 disabled={!newName.trim()}
-                className="w-full h-12 bg-primary text-white font-semibold rounded-xl disabled:opacity-40"
+                className="w-full h-12 bg-primary text-bg font-semibold rounded-xl disabled:opacity-40"
               >
                 Add Exercise
               </button>

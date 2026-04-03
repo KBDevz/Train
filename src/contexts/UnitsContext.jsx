@@ -3,10 +3,10 @@ import { createContext, useContext, useState, useEffect } from 'react'
 const UnitsContext = createContext({})
 
 export function UnitsProvider({ children }) {
-  const [units, setUnits] = useState(() => localStorage.getItem('trainlocal_units') || 'lbs')
+  const [units, setUnits] = useState(() => localStorage.getItem('cadence_units') || 'lbs')
 
   useEffect(() => {
-    localStorage.setItem('trainlocal_units', units)
+    localStorage.setItem('cadence_units', units)
   }, [units])
 
   const convertWeight = (lbs) => {

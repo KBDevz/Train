@@ -98,27 +98,27 @@ export default function ProfileScreen() {
   return (
     <div className="screen-container px-4 pt-4">
       <div className="flex items-center gap-2 mb-6">
-        <button onClick={() => navigate(-1)} className="w-9 h-9 flex items-center justify-center rounded-lg bg-white border border-border">
-          <ChevronLeft size={20} />
+        <button onClick={() => navigate(-1)} className="w-9 h-9 flex items-center justify-center rounded-lg bg-card border border-border">
+          <ChevronLeft size={20} className="text-text" />
         </button>
-        <h1 className="text-lg font-bold">Profile</h1>
+        <h1 className="text-lg font-bold text-text">Profile</h1>
       </div>
 
-      <div className="bg-white rounded-xl p-4 mb-4">
-        <p className="text-sm font-medium text-slate-800">{user?.email}</p>
+      <div className="bg-card border border-border rounded-xl p-4 mb-4">
+        <p className="text-sm font-medium text-text">{user?.email}</p>
         <p className="text-xs text-muted mt-1">Account</p>
       </div>
 
       {/* Units */}
-      <div className="bg-white rounded-xl p-4 mb-4">
-        <p className="text-sm font-medium text-slate-700 mb-2">Weight Units</p>
+      <div className="bg-card border border-border rounded-xl p-4 mb-4">
+        <p className="text-xs uppercase tracking-wider text-text-secondary mb-2">Weight Units</p>
         <div className="flex gap-2">
           {['lbs', 'kg'].map(u => (
             <button
               key={u}
               onClick={() => setUnits(u)}
               className={`flex-1 h-10 rounded-lg font-medium text-sm transition-colors ${
-                units === u ? 'bg-primary text-white' : 'bg-surface border border-border text-slate-600'
+                units === u ? 'border border-primary bg-primary-dim text-primary' : 'bg-card border border-border text-text-secondary'
               }`}
             >
               {u.toUpperCase()}
@@ -130,17 +130,17 @@ export default function ProfileScreen() {
       {/* Fitness Profile */}
       {profile && (
         <div className="space-y-4 mb-6">
-          <h2 className="text-sm font-semibold text-slate-700">Fitness Profile</h2>
+          <h2 className="text-xs uppercase tracking-wider text-text-secondary">Fitness Profile</h2>
 
           <div>
-            <label className="block text-xs font-medium text-muted mb-1">Goal</label>
+            <label className="block text-xs uppercase tracking-wider text-text-secondary mb-1">Goal</label>
             <div className="space-y-1.5">
               {GOALS.map(g => (
                 <button
                   key={g.value}
                   onClick={() => update('goal', g.value)}
-                  className={`w-full h-11 rounded-xl border-2 text-left px-4 text-sm font-medium transition-colors ${
-                    profile.goal === g.value ? 'border-primary bg-primary/5 text-primary' : 'border-border bg-white text-slate-700'
+                  className={`w-full h-11 rounded-xl border text-left px-4 text-sm font-medium transition-colors ${
+                    profile.goal === g.value ? 'border-primary bg-primary-dim text-primary' : 'border-border bg-card text-text-secondary'
                   }`}
                 >
                   {g.label}
@@ -150,14 +150,14 @@ export default function ProfileScreen() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-muted mb-1">Experience</label>
+            <label className="block text-xs uppercase tracking-wider text-text-secondary mb-1">Experience</label>
             <div className="flex gap-2">
               {EXPERIENCE.map(e => (
                 <button
                   key={e.value}
                   onClick={() => update('experience', e.value)}
                   className={`flex-1 h-10 rounded-lg text-sm font-medium transition-colors ${
-                    profile.experience === e.value ? 'bg-primary text-white' : 'bg-white border border-border text-slate-600'
+                    profile.experience === e.value ? 'border border-primary bg-primary-dim text-primary' : 'bg-card border border-border text-text-secondary'
                   }`}
                 >
                   {e.label}
@@ -167,14 +167,14 @@ export default function ProfileScreen() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-muted mb-1">Days Per Week</label>
+            <label className="block text-xs uppercase tracking-wider text-text-secondary mb-1">Days Per Week</label>
             <div className="flex gap-2">
               {[2, 3, 4, 5, 6].map(d => (
                 <button
                   key={d}
                   onClick={() => update('days_per_week', d)}
                   className={`flex-1 h-10 rounded-lg text-sm font-bold transition-colors ${
-                    profile.days_per_week === d ? 'bg-primary text-white' : 'bg-white border border-border text-slate-600'
+                    profile.days_per_week === d ? 'border border-primary bg-primary-dim text-primary' : 'bg-card border border-border text-text-secondary'
                   }`}
                 >
                   {d}
@@ -184,14 +184,14 @@ export default function ProfileScreen() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-muted mb-1">Equipment</label>
+            <label className="block text-xs uppercase tracking-wider text-text-secondary mb-1">Equipment</label>
             <div className="space-y-1.5">
               {EQUIPMENT.map(e => (
                 <button
                   key={e.value}
                   onClick={() => update('equipment', e.value)}
-                  className={`w-full h-11 rounded-xl border-2 text-left px-4 text-sm font-medium transition-colors ${
-                    profile.equipment === e.value ? 'border-primary bg-primary/5 text-primary' : 'border-border bg-white text-slate-700'
+                  className={`w-full h-11 rounded-xl border text-left px-4 text-sm font-medium transition-colors ${
+                    profile.equipment === e.value ? 'border-primary bg-primary-dim text-primary' : 'border-border bg-card text-text-secondary'
                   }`}
                 >
                   {e.label}
@@ -207,13 +207,13 @@ export default function ProfileScreen() {
               { key: 'deadlift_1rm', label: 'Deadlift 1RM' },
             ].map(f => (
               <div key={f.key}>
-                <label className="block text-xs font-medium text-muted mb-1">{f.label}</label>
+                <label className="block text-xs uppercase tracking-wider text-text-secondary mb-1">{f.label}</label>
                 <input
                   type="number"
                   inputMode="decimal"
                   value={profile[f.key] || ''}
                   onChange={(e) => update(f.key, e.target.value ? parseFloat(e.target.value) : null)}
-                  className="w-full h-10 px-3 rounded-lg border border-border text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  className="w-full h-10 px-3 rounded-lg bg-card border border-border text-text text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary/30"
                   placeholder="0"
                 />
               </div>
@@ -222,7 +222,7 @@ export default function ProfileScreen() {
 
           <button
             onClick={handleSave}
-            className="w-full h-12 bg-primary text-white font-semibold rounded-xl"
+            className="w-full h-12 bg-primary text-bg font-semibold rounded-xl"
           >
             Save Changes
           </button>

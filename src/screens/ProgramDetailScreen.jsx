@@ -39,7 +39,7 @@ export default function ProgramDetailScreen() {
   }
 
   if (!program) {
-    return <div className="screen-container px-4 pt-6"><p>Program not found</p></div>
+    return <div className="screen-container px-4 pt-6"><p className="text-text">Program not found</p></div>
   }
 
   const rationale = program.description?.split('\n\nRationale: ')[1]
@@ -49,11 +49,11 @@ export default function ProgramDetailScreen() {
     <div className="screen-container px-4 pt-4">
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
-        <button onClick={() => navigate('/programs')} className="w-9 h-9 flex items-center justify-center rounded-lg bg-white border border-border">
+        <button onClick={() => navigate('/programs')} className="w-9 h-9 flex items-center justify-center rounded-lg bg-card border border-border text-text">
           <ChevronLeft size={20} />
         </button>
         <div className="flex-1">
-          <h1 className="text-lg font-bold text-slate-900">{program.name}</h1>
+          <h1 className="text-lg font-bold text-text">{program.name}</h1>
           <p className="text-xs text-muted">{program.days_per_week} days/week · {program.weeks} weeks</p>
         </div>
         <button onClick={handleDelete} className="w-9 h-9 flex items-center justify-center rounded-lg text-danger">
@@ -61,28 +61,28 @@ export default function ProgramDetailScreen() {
         </button>
       </div>
 
-      {description && <p className="text-sm text-slate-600 mb-3">{description}</p>}
+      {description && <p className="text-sm text-text-secondary mb-3">{description}</p>}
       {rationale && (
-        <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 mb-4">
+        <div className="bg-primary-dim border border-primary/20 rounded-xl p-3 mb-4">
           <p className="text-xs font-semibold text-primary mb-1">AI Rationale</p>
-          <p className="text-sm text-slate-700">{rationale}</p>
+          <p className="text-sm text-text-secondary">{rationale}</p>
         </div>
       )}
 
       {/* Workout Days */}
-      <h2 className="text-sm font-semibold text-slate-700 mb-2">Workout Days</h2>
+      <h2 className="text-xs uppercase tracking-wider text-text-secondary mb-2">Workout Days</h2>
       <div className="space-y-2">
         {days.map((day) => (
-          <div key={day.id} className="bg-white rounded-xl overflow-hidden">
+          <div key={day.id} className="bg-card border border-border rounded-xl overflow-hidden">
             <button
               onClick={() => setExpandedDay(expandedDay === day.id ? null : day.id)}
-              className="w-full p-4 flex items-center gap-3 text-left"
+              className="w-full p-4 flex items-center gap-3 text-left active:bg-card-hover"
             >
-              <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-primary-dim rounded-lg flex items-center justify-center">
                 <span className="text-sm font-bold text-primary">{day.order_index + 1}</span>
               </div>
               <div className="flex-1">
-                <p className="font-medium text-slate-800">{day.name}</p>
+                <p className="font-medium text-text">{day.name}</p>
                 <p className="text-xs text-muted">{day.workout_exercises?.length || 0} exercises</p>
               </div>
               <button
@@ -90,21 +90,21 @@ export default function ProgramDetailScreen() {
                   e.stopPropagation()
                   navigate('/workout', { state: { day, program } })
                 }}
-                className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white"
+                className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-bg"
               >
                 <Play size={14} />
               </button>
             </button>
 
             {expandedDay === day.id && (
-              <div className="px-4 pb-4 space-y-2 border-t border-border/50">
+              <div className="px-4 pb-4 space-y-2 border-t border-border">
                 {day.workout_exercises?.map((we) => (
                   <div key={we.id} className="flex items-center justify-between py-2">
                     <div>
-                      <p className="text-sm font-medium text-slate-700">{we.exercises?.name || 'Exercise'}</p>
+                      <p className="text-sm font-medium text-text">{we.exercises?.name || 'Exercise'}</p>
                       <p className="text-xs text-muted">{we.exercises?.muscle_group}</p>
                     </div>
-                    <p className="text-sm text-slate-600">
+                    <p className="text-sm text-text-secondary">
                       {we.target_sets}×{we.target_reps}
                       {we.target_weight > 0 && ` @ ${convertWeight(we.target_weight)} ${unitLabel}`}
                     </p>

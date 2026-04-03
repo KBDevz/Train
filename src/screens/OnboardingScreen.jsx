@@ -109,7 +109,7 @@ export default function OnboardingScreen({ onComplete }) {
 
   if (generating) {
     return (
-      <div className="min-h-dvh flex flex-col items-center justify-center px-6">
+      <div className="min-h-dvh bg-bg flex flex-col items-center justify-center px-6">
         <Zap size={40} className="text-primary mb-4" />
         <LoadingSpinner message="Building your personalized program..." />
         <p className="text-xs text-muted mt-2">This may take a few seconds</p>
@@ -120,17 +120,18 @@ export default function OnboardingScreen({ onComplete }) {
   const steps = [
     // Step 0: Goal
     <div key="goal" className="space-y-3">
-      <h2 className="text-xl font-bold">What's your main goal?</h2>
+      <p className="text-xs uppercase tracking-wider text-text-secondary">Step 1 of 6</p>
+      <h2 className="text-xl font-bold text-text">What's your main goal?</h2>
       <p className="text-sm text-muted">This helps us design the right program</p>
       <div className="space-y-2 mt-4">
         {GOALS.map((g) => (
           <button
             key={g.value}
             onClick={() => update('goal', g.value)}
-            className={`w-full h-14 rounded-xl border-2 text-left px-4 flex items-center gap-3 font-medium transition-colors ${
+            className={`w-full h-14 rounded-xl border text-left px-4 flex items-center gap-3 font-medium transition-colors ${
               profile.goal === g.value
-                ? 'border-primary bg-primary/5 text-primary'
-                : 'border-border bg-white text-slate-700'
+                ? 'border-primary bg-primary-dim text-primary'
+                : 'border-border bg-card text-text'
             }`}
           >
             <span className="text-xl">{g.emoji}</span>
@@ -142,17 +143,18 @@ export default function OnboardingScreen({ onComplete }) {
 
     // Step 1: Experience
     <div key="exp" className="space-y-3">
-      <h2 className="text-xl font-bold">Experience level?</h2>
+      <p className="text-xs uppercase tracking-wider text-text-secondary">Step 2 of 6</p>
+      <h2 className="text-xl font-bold text-text">Experience level?</h2>
       <p className="text-sm text-muted">We'll adjust intensity accordingly</p>
       <div className="space-y-2 mt-4">
         {EXPERIENCE.map((e) => (
           <button
             key={e.value}
             onClick={() => update('experience', e.value)}
-            className={`w-full h-14 rounded-xl border-2 text-left px-4 flex items-center justify-between font-medium transition-colors ${
+            className={`w-full h-14 rounded-xl border text-left px-4 flex items-center justify-between font-medium transition-colors ${
               profile.experience === e.value
-                ? 'border-primary bg-primary/5 text-primary'
-                : 'border-border bg-white text-slate-700'
+                ? 'border-primary bg-primary-dim text-primary'
+                : 'border-border bg-card text-text'
             }`}
           >
             <span>{e.label}</span>
@@ -164,17 +166,18 @@ export default function OnboardingScreen({ onComplete }) {
 
     // Step 2: Days per week
     <div key="days" className="space-y-3">
-      <h2 className="text-xl font-bold">Days per week?</h2>
+      <p className="text-xs uppercase tracking-wider text-text-secondary">Step 3 of 6</p>
+      <h2 className="text-xl font-bold text-text">Days per week?</h2>
       <p className="text-sm text-muted">How many days can you train?</p>
       <div className="flex gap-2 mt-4">
         {DAYS.map((d) => (
           <button
             key={d}
             onClick={() => update('days_per_week', d)}
-            className={`flex-1 h-14 rounded-xl border-2 font-bold text-lg transition-colors ${
+            className={`flex-1 h-14 rounded-xl border font-bold text-lg transition-colors ${
               profile.days_per_week === d
-                ? 'border-primary bg-primary/5 text-primary'
-                : 'border-border bg-white text-slate-700'
+                ? 'border-primary bg-primary-dim text-primary'
+                : 'border-border bg-card text-text'
             }`}
           >
             {d}
@@ -185,17 +188,18 @@ export default function OnboardingScreen({ onComplete }) {
 
     // Step 3: Equipment
     <div key="equip" className="space-y-3">
-      <h2 className="text-xl font-bold">Equipment access?</h2>
+      <p className="text-xs uppercase tracking-wider text-text-secondary">Step 4 of 6</p>
+      <h2 className="text-xl font-bold text-text">Equipment access?</h2>
       <p className="text-sm text-muted">We'll pick exercises that fit your setup</p>
       <div className="space-y-2 mt-4">
         {EQUIPMENT.map((e) => (
           <button
             key={e.value}
             onClick={() => update('equipment', e.value)}
-            className={`w-full h-14 rounded-xl border-2 text-left px-4 font-medium transition-colors ${
+            className={`w-full h-14 rounded-xl border text-left px-4 font-medium transition-colors ${
               profile.equipment === e.value
-                ? 'border-primary bg-primary/5 text-primary'
-                : 'border-border bg-white text-slate-700'
+                ? 'border-primary bg-primary-dim text-primary'
+                : 'border-border bg-card text-text'
             }`}
           >
             {e.label}
@@ -206,7 +210,8 @@ export default function OnboardingScreen({ onComplete }) {
 
     // Step 4: Limitations
     <div key="lim" className="space-y-3">
-      <h2 className="text-xl font-bold">Any limitations?</h2>
+      <p className="text-xs uppercase tracking-wider text-text-secondary">Step 5 of 6</p>
+      <h2 className="text-xl font-bold text-text">Any limitations?</h2>
       <p className="text-sm text-muted">Select all that apply</p>
       <div className="space-y-2 mt-4">
         {LIMITATIONS.map((lim) => {
@@ -215,10 +220,10 @@ export default function OnboardingScreen({ onComplete }) {
             <button
               key={lim}
               onClick={() => toggleLimitation(lim)}
-              className={`w-full h-14 rounded-xl border-2 text-left px-4 font-medium transition-colors ${
+              className={`w-full h-14 rounded-xl border text-left px-4 font-medium transition-colors ${
                 selected
-                  ? 'border-primary bg-primary/5 text-primary'
-                  : 'border-border bg-white text-slate-700'
+                  ? 'border-primary bg-primary-dim text-primary'
+                  : 'border-border bg-card text-text'
               }`}
             >
               {lim}
@@ -230,8 +235,9 @@ export default function OnboardingScreen({ onComplete }) {
 
     // Step 5: Baseline lifts
     <div key="lifts" className="space-y-3">
-      <h2 className="text-xl font-bold">Baseline lifts</h2>
-      <p className="text-sm text-muted">Optional — skip if you're unsure</p>
+      <p className="text-xs uppercase tracking-wider text-text-secondary">Step 6 of 6</p>
+      <h2 className="text-xl font-bold text-text">Baseline lifts</h2>
+      <p className="text-sm text-muted">Optional -- skip if you're unsure</p>
       <div className="space-y-3 mt-4">
         {[
           { key: 'squat_1rm', label: 'Squat 1RM (lbs)' },
@@ -239,13 +245,13 @@ export default function OnboardingScreen({ onComplete }) {
           { key: 'deadlift_1rm', label: 'Deadlift 1RM (lbs)' },
         ].map((f) => (
           <div key={f.key}>
-            <label className="block text-sm font-medium text-slate-700 mb-1">{f.label}</label>
+            <label className="block text-xs uppercase tracking-wider text-text-secondary mb-1">{f.label}</label>
             <input
               type="number"
               inputMode="decimal"
               value={profile[f.key]}
               onChange={(e) => update(f.key, e.target.value)}
-              className="w-full h-12 px-4 rounded-xl border border-border bg-white text-base focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="w-full h-12 px-4 rounded-xl border border-border bg-card text-text text-base focus:outline-none focus:ring-2 focus:ring-primary/30 placeholder-muted"
               placeholder="0"
             />
           </div>
@@ -255,14 +261,14 @@ export default function OnboardingScreen({ onComplete }) {
   ]
 
   return (
-    <div className="min-h-dvh flex flex-col px-6 py-8">
+    <div className="min-h-dvh bg-bg flex flex-col px-6 py-8">
       {/* Progress bar */}
       <div className="flex gap-1.5 mb-8">
         {steps.map((_, i) => (
           <div
             key={i}
             className={`flex-1 h-1.5 rounded-full transition-colors ${
-              i <= step ? 'bg-primary' : 'bg-border'
+              i <= step ? 'bg-primary' : 'bg-subtle'
             }`}
           />
         ))}
@@ -276,7 +282,7 @@ export default function OnboardingScreen({ onComplete }) {
         {step > 0 && (
           <button
             onClick={() => setStep(step - 1)}
-            className="h-12 px-4 rounded-xl border border-border bg-white font-medium flex items-center gap-1"
+            className="h-12 px-4 rounded-xl border border-border bg-card text-text font-medium flex items-center gap-1"
           >
             <ChevronLeft size={18} /> Back
           </button>
@@ -284,13 +290,9 @@ export default function OnboardingScreen({ onComplete }) {
         <button
           onClick={() => (step < 5 ? setStep(step + 1) : handleFinish())}
           disabled={!canNext()}
-          className="flex-1 h-12 bg-primary text-white font-semibold rounded-xl flex items-center justify-center gap-1 disabled:opacity-40 transition-colors"
+          className="flex-1 h-12 bg-primary text-bg font-semibold rounded-xl flex items-center justify-center gap-1 disabled:opacity-40 transition-colors"
         >
-          {step === 5 ? (
-            <>
-              <Zap size={18} /> Generate My Program
-            </>
-          ) : (
+          {step === 5 ? 'Generate My Program' : (
             <>
               Next <ChevronRight size={18} />
             </>

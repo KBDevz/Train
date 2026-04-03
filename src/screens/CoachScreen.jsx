@@ -217,10 +217,10 @@ export default function CoachScreen() {
   return (
     <div className="screen-container px-4 pt-6 space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-slate-900">AI Coach</h1>
+        <h1 className="text-xl font-bold text-text">AI Coach</h1>
         <button
           onClick={() => navigate('/profile')}
-          className="w-9 h-9 flex items-center justify-center rounded-lg bg-white border border-border"
+          className="w-9 h-9 flex items-center justify-center rounded-lg bg-card border border-border"
         >
           <Settings size={18} className="text-muted" />
         </button>
@@ -228,30 +228,30 @@ export default function CoachScreen() {
 
       {/* Goal summary */}
       {goalSummary && (
-        <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 flex items-center gap-3">
+        <div className="bg-primary-dim border border-primary/20 rounded-xl p-3 flex items-center gap-3">
           <TrendingUp size={18} className="text-primary" />
           <div>
-            <p className="text-xs font-semibold text-primary">Your Goal</p>
-            <p className="text-sm text-slate-700">{goalSummary}</p>
+            <p className="text-xs font-semibold text-primary uppercase tracking-wider">Your Goal</p>
+            <p className="text-sm text-text-secondary">{goalSummary}</p>
           </div>
         </div>
       )}
 
       {/* Program Rationale */}
       {rationale && (
-        <div className="bg-white rounded-xl p-4">
+        <div className="bg-card border border-border rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
             <Zap size={16} className="text-primary" />
-            <p className="text-sm font-semibold text-slate-700">Program Rationale</p>
+            <p className="text-sm font-semibold text-text-secondary">Program Rationale</p>
           </div>
-          <p className="text-sm text-slate-600">{rationale}</p>
+          <p className="text-sm text-text-secondary">{rationale}</p>
         </div>
       )}
 
       {/* Weekly Check-in */}
-      <div className="bg-white rounded-xl p-4">
+      <div className="bg-card border border-border rounded-xl p-4">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-sm font-semibold text-slate-700">Weekly Check-in</p>
+          <p className="text-sm font-semibold text-text-secondary">Weekly Check-in</p>
           <button
             onClick={handleWeeklyAdaptation}
             className="text-xs text-primary font-medium flex items-center gap-1"
@@ -261,7 +261,7 @@ export default function CoachScreen() {
         </div>
 
         {weekSummary && (
-          <p className="text-sm text-slate-600 bg-surface rounded-lg p-3 mb-3">{weekSummary}</p>
+          <p className="text-sm text-text-secondary bg-subtle rounded-lg p-3 mb-3">{weekSummary}</p>
         )}
 
         {pendingAdaptations.length === 0 ? (
@@ -269,9 +269,9 @@ export default function CoachScreen() {
         ) : (
           <div className="space-y-2">
             {pendingAdaptations.map(a => (
-              <div key={a.id} className="bg-surface rounded-lg p-3 flex items-start gap-2">
+              <div key={a.id} className="bg-subtle rounded-lg p-3 flex items-start gap-2">
                 <div className="flex-1">
-                  <p className="text-sm text-slate-700">{a.suggestion}</p>
+                  <p className="text-sm text-text">{a.suggestion}</p>
                   <p className="text-xs text-muted mt-1">
                     {new Date(a.created_at).toLocaleDateString()}
                   </p>
@@ -298,15 +298,15 @@ export default function CoachScreen() {
 
       {/* Plateau Alerts */}
       {plateauAlerts.length > 0 && (
-        <div className="bg-white rounded-xl p-4">
+        <div className="bg-card border border-border rounded-xl p-4">
           <div className="flex items-center gap-2 mb-3">
             <AlertTriangle size={16} className="text-warning" />
-            <p className="text-sm font-semibold text-slate-700">Plateau Alerts</p>
+            <p className="text-sm font-semibold text-text-secondary">Plateau Alerts</p>
           </div>
           <div className="space-y-2">
             {plateauAlerts.map((alert, i) => (
               <div key={i} className="bg-warning/5 border border-warning/20 rounded-lg p-3">
-                <p className="text-sm font-medium text-slate-700">{alert.exercise}</p>
+                <p className="text-sm font-medium text-text">{alert.exercise}</p>
                 <p className="text-xs text-muted mb-2">
                   Stuck at {alert.weight}lbs for {alert.sessions}+ sessions
                 </p>
@@ -323,13 +323,13 @@ export default function CoachScreen() {
       )}
 
       {/* Regenerate Program */}
-      <div className="bg-white rounded-xl p-4">
+      <div className="bg-card border border-border rounded-xl p-4">
         <button
           onClick={() => setShowRegen(!showRegen)}
           className="flex items-center gap-2 w-full"
         >
           <RefreshCw size={16} className="text-primary" />
-          <p className="text-sm font-semibold text-slate-700">Regenerate My Program</p>
+          <p className="text-sm font-semibold text-text-secondary">Regenerate My Program</p>
         </button>
 
         {showRegen && (
@@ -337,12 +337,12 @@ export default function CoachScreen() {
             <textarea
               value={regenReason}
               onChange={(e) => setRegenReason(e.target.value)}
-              className="w-full h-20 px-3 py-2 rounded-xl border border-border text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="w-full h-20 px-3 py-2 rounded-xl bg-card border border-border text-text text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/30"
               placeholder="Optional: reason for regenerating (e.g. 'want more upper body focus')"
             />
             <button
               onClick={handleRegenerate}
-              className="w-full h-11 bg-primary text-white font-semibold rounded-xl flex items-center justify-center gap-2 text-sm"
+              className="w-full h-11 bg-primary text-bg font-semibold rounded-xl flex items-center justify-center gap-2 text-sm"
             >
               <Zap size={16} /> Generate New Program
             </button>

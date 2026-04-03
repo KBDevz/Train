@@ -39,7 +39,7 @@ function AppRoutes() {
   if (loading || (user && checkingProfile)) {
     return (
       <div className="min-h-dvh flex items-center justify-center">
-        <LoadingSpinner message="Loading TrainLocal..." />
+        <LoadingSpinner message="Loading Cadence..." />
       </div>
     )
   }

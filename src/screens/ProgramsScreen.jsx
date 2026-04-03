@@ -28,10 +28,10 @@ export default function ProgramsScreen() {
   return (
     <div className="screen-container px-4 pt-6">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-bold text-slate-900">Programs</h1>
+        <h1 className="text-xl font-bold text-text">Programs</h1>
         <button
           onClick={() => navigate('/programs/create')}
-          className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center text-white"
+          className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center text-bg"
         >
           <Plus size={20} />
         </button>
@@ -46,13 +46,13 @@ export default function ProgramsScreen() {
             <div className="flex gap-2">
               <button
                 onClick={() => navigate('/programs/create')}
-                className="h-10 px-4 bg-white border border-border rounded-lg text-sm font-medium"
+                className="h-10 px-4 bg-card border border-border rounded-lg text-sm font-medium text-text"
               >
                 Create Manual
               </button>
               <button
                 onClick={() => navigate('/coach')}
-                className="h-10 px-4 bg-primary text-white rounded-lg text-sm font-medium flex items-center gap-1"
+                className="h-10 px-4 bg-primary text-bg rounded-lg text-sm font-medium flex items-center gap-1"
               >
                 <Zap size={14} /> AI Generate
               </button>
@@ -65,13 +65,13 @@ export default function ProgramsScreen() {
             <button
               key={p.id}
               onClick={() => navigate(`/programs/${p.id}`)}
-              className="w-full bg-white rounded-xl p-4 text-left flex items-center gap-3"
+              className="w-full bg-card border border-border rounded-xl p-4 text-left flex items-center gap-3 active:bg-card-hover"
             >
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <p className="font-semibold text-slate-800">{p.name}</p>
+                  <p className="font-semibold text-text">{p.name}</p>
                   {p.ai_generated && (
-                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">AI</span>
+                    <span className="text-[10px] font-bold text-primary bg-primary-dim px-1.5 py-0.5 rounded">AI</span>
                   )}
                 </div>
                 <p className="text-xs text-muted">

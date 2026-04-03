@@ -7,7 +7,7 @@ import { fetchExerciseLibrary } from '../lib/programService'
 import { supabase } from '../lib/supabase'
 import { Check, Plus, Search, X, ChevronDown, ChevronUp, Square } from 'lucide-react'
 
-const CACHE_KEY = 'trainlocal_active_session'
+const CACHE_KEY = 'cadence_active_session'
 
 export default function WorkoutScreen() {
   const { user } = useAuth()
@@ -209,20 +209,20 @@ export default function WorkoutScreen() {
   ]
 
   return (
-    <div className="min-h-dvh flex flex-col bg-surface">
+    <div className="min-h-dvh flex flex-col bg-bg">
       {/* Header */}
-      <div className="bg-white border-b border-border px-4 py-3 sticky top-0 z-40">
+      <div className="bg-bg/95 backdrop-blur-md border-b border-border px-4 py-3 sticky top-0 z-40">
         <div className="flex items-center justify-between">
           <div>
-            <p className="font-semibold text-slate-800 text-sm">{day?.name || 'Workout'}</p>
+            <p className="font-semibold text-text text-sm">{day?.name || 'Workout'}</p>
             <div className="flex gap-3 mt-0.5">
-              <span className="text-xs text-muted">⏱ {formatTime(elapsed)}</span>
-              <span className="text-xs text-muted">📊 {convertWeight(totalVolume).toLocaleString()} {unitLabel}</span>
+              <span className="text-xs text-text-secondary">⏱ {formatTime(elapsed)}</span>
+              <span className="text-xs text-text-secondary">📊 {convertWeight(totalVolume).toLocaleString()} {unitLabel}</span>
             </div>
           </div>
           <button
             onClick={() => setShowFinish(true)}
-            className="h-9 px-4 bg-success text-white text-sm font-semibold rounded-lg"
+            className="h-9 px-4 bg-success text-bg text-sm font-semibold rounded-lg"
           >
             Finish
           </button>
@@ -232,9 +232,9 @@ export default function WorkoutScreen() {
       {/* Exercise Cards */}
       <div className="flex-1 px-4 py-4 space-y-4 pb-24">
         {exerciseCards.map((card, cardIdx) => (
-          <div key={cardIdx} className="bg-white rounded-xl overflow-hidden">
-            <div className="px-4 py-3 border-b border-border/50">
-              <p className="font-semibold text-slate-800">{card.exercise_name}</p>
+          <div key={cardIdx} className="bg-card border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border">
+              <p className="font-semibold text-text">{card.exercise_name}</p>
               {card.lastSummary && (
                 <p className="text-xs text-muted mt-0.5">Last time: {card.lastSummary}</p>
               )}
@@ -242,7 +242,7 @@ export default function WorkoutScreen() {
 
             <div className="px-4 py-2">
               {/* Header row */}
-              <div className="flex items-center gap-2 py-1 text-xs text-muted font-medium">
+              <div className="flex items-center gap-2 py-1 text-xs uppercase tracking-wider text-text-secondary font-medium">
                 <span className="w-8 text-center">Set</span>
                 <span className="flex-1 text-center">{unitLabel}</span>
                 <span className="flex-1 text-center">Reps</span>
@@ -256,14 +256,14 @@ export default function WorkoutScreen() {
                     set.completed ? 'bg-success-light' : ''
                   }`}
                 >
-                  <span className="w-8 text-center text-sm font-medium text-slate-500">{set.set_number}</span>
+                  <span className="w-8 text-center text-sm font-medium text-text-secondary">{set.set_number}</span>
                   <input
                     type="number"
                     inputMode="decimal"
                     value={set.weight}
                     onChange={(e) => updateSet(cardIdx, setIdx, 'weight', e.target.value)}
                     placeholder={set.lastWeight ? String(convertWeight(set.lastWeight)) : '0'}
-                    className="flex-1 h-11 text-center rounded-lg border border-border bg-surface text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/30 placeholder:text-slate-300"
+                    className="flex-1 h-11 text-center rounded-lg border border-border bg-card text-text text-sm font-medium focus:outline-none focus:ring-1 focus:ring-primary/50 placeholder:text-muted"
                   />
                   <input
                     type="number"
@@ -271,13 +271,13 @@ export default function WorkoutScreen() {
                     value={set.reps}
                     onChange={(e) => updateSet(cardIdx, setIdx, 'reps', e.target.value)}
                     placeholder={set.lastReps ? String(set.lastReps) : '0'}
-                    className="flex-1 h-11 text-center rounded-lg border border-border bg-surface text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/30 placeholder:text-slate-300"
+                    className="flex-1 h-11 text-center rounded-lg border border-border bg-card text-text text-sm font-medium focus:outline-none focus:ring-1 focus:ring-primary/50 placeholder:text-muted"
                   />
                   <button
                     onClick={() => toggleComplete(cardIdx, setIdx)}
                     className={`w-10 h-11 rounded-lg flex items-center justify-center transition-colors ${
                       set.completed
-                        ? 'bg-success text-white'
+                        ? 'bg-success text-bg'
                         : 'border border-border text-muted'
                     }`}
                   >
@@ -310,7 +310,7 @@ export default function WorkoutScreen() {
                     updated[cardIdx].notes = e.target.value
                     setExerciseCards(updated)
                   }}
-                  className="w-full h-16 mt-1 px-3 py-2 rounded-lg border border-border text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  className="w-full h-16 mt-1 px-3 py-2 rounded-lg border border-border bg-card text-text text-sm resize-none focus:outline-none focus:ring-1 focus:ring-primary/50"
                   placeholder="Add notes..."
                 />
               )}
@@ -328,33 +328,33 @@ export default function WorkoutScreen() {
 
       {/* Finish Modal */}
       {showFinish && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-6">
-          <div className="bg-white rounded-2xl w-full max-w-sm p-6">
-            <h2 className="text-lg font-bold text-slate-900 mb-4">Workout Complete!</h2>
+        <div className="fixed inset-0 bg-bg/80 z-50 flex items-center justify-center px-6">
+          <div className="bg-card border border-border rounded-2xl w-full max-w-sm p-6">
+            <h2 className="text-lg font-bold text-text mb-4">Workout Complete!</h2>
 
             <div className="grid grid-cols-3 gap-3 mb-5">
               <div className="text-center">
-                <p className="text-xl font-bold text-slate-800">{formatTime(elapsed)}</p>
-                <p className="text-xs text-muted">Duration</p>
+                <p className="text-xl font-bold text-text">{formatTime(elapsed)}</p>
+                <p className="text-xs text-text-secondary">Duration</p>
               </div>
               <div className="text-center">
-                <p className="text-xl font-bold text-slate-800">{convertWeight(totalVolume).toLocaleString()}</p>
-                <p className="text-xs text-muted">{unitLabel}</p>
+                <p className="text-xl font-bold text-text">{convertWeight(totalVolume).toLocaleString()}</p>
+                <p className="text-xs text-text-secondary">{unitLabel}</p>
               </div>
               <div className="text-center">
-                <p className="text-xl font-bold text-slate-800">{totalSetsCompleted}</p>
-                <p className="text-xs text-muted">Sets</p>
+                <p className="text-xl font-bold text-text">{totalSetsCompleted}</p>
+                <p className="text-xs text-text-secondary">Sets</p>
               </div>
             </div>
 
-            <p className="text-sm font-medium text-slate-700 mb-2">How was it?</p>
+            <p className="text-sm font-medium text-text-secondary mb-2">How was it?</p>
             <div className="flex gap-3 mb-5">
               {feedbackEmojis.map((f) => (
                 <button
                   key={f.value}
                   onClick={() => setFeedbackRating(f.value)}
                   className={`flex-1 py-3 rounded-xl text-center text-xl transition-colors ${
-                    feedbackRating === f.value ? 'bg-primary/10 ring-2 ring-primary' : 'bg-surface'
+                    feedbackRating === f.value ? 'bg-primary-dim ring-2 ring-primary' : 'bg-subtle'
                   }`}
                 >
                   {f.emoji}
@@ -365,13 +365,13 @@ export default function WorkoutScreen() {
             <div className="flex gap-2">
               <button
                 onClick={() => setShowFinish(false)}
-                className="flex-1 h-12 rounded-xl border border-border font-medium"
+                className="flex-1 h-12 rounded-xl border border-border text-text font-medium"
               >
                 Cancel
               </button>
               <button
                 onClick={handleFinish}
-                className="flex-1 h-12 bg-primary text-white rounded-xl font-semibold"
+                className="flex-1 h-12 bg-primary text-bg rounded-xl font-semibold"
               >
                 Save
               </button>
@@ -382,14 +382,14 @@ export default function WorkoutScreen() {
 
       {/* Exercise Search Sheet */}
       {showExSearch && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end">
-          <div className="w-full max-w-[480px] mx-auto bg-white rounded-t-2xl max-h-[70vh] flex flex-col">
+        <div className="fixed inset-0 bg-bg/80 z-50 flex items-end">
+          <div className="w-full max-w-[480px] mx-auto bg-card border-t border-border rounded-t-2xl max-h-[70vh] flex flex-col">
             <div className="p-4 border-b border-border flex items-center gap-2">
               <Search size={18} className="text-muted" />
               <input
                 value={exSearch}
                 onChange={(e) => setExSearch(e.target.value)}
-                className="flex-1 text-base focus:outline-none"
+                className="flex-1 text-base bg-transparent text-text focus:outline-none placeholder:text-muted"
                 placeholder="Search exercises or type to create..."
                 autoFocus
               />
@@ -402,9 +402,9 @@ export default function WorkoutScreen() {
                 <button
                   key={ex.id}
                   onClick={() => addExercise(ex)}
-                  className="w-full text-left px-3 py-3 rounded-lg active:bg-surface transition-colors"
+                  className="w-full text-left px-3 py-3 rounded-lg active:bg-subtle transition-colors"
                 >
-                  <p className="text-sm font-medium text-slate-800">{ex.name}</p>
+                  <p className="text-sm font-medium text-text">{ex.name}</p>
                   <p className="text-xs text-muted">{ex.muscle_group}</p>
                 </button>
               ))}
@@ -418,7 +418,7 @@ export default function WorkoutScreen() {
                       .single()
                     if (data) addExercise(data)
                   }}
-                  className="w-full text-left px-3 py-3 rounded-lg bg-primary/5"
+                  className="w-full text-left px-3 py-3 rounded-lg bg-primary-dim"
                 >
                   <p className="text-sm font-medium text-primary">+ Create "{exSearch}"</p>
                 </button>
