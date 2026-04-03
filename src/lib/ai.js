@@ -1,6 +1,43 @@
 const ANTHROPIC_API_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY
 const MODEL = 'claude-sonnet-4-20250514'
-const MAX_TOKENS = 2000
+const MAX_TOKENS = 4096
+
+function repairJson(text) {
+  // Extract the outermost JSON object
+  let jsonStr = text
+  const startIdx = text.indexOf('{')
+  if (startIdx === -1) throw new Error('No JSON found in Claude response')
+  jsonStr = text.slice(startIdx)
+
+  // Try parsing as-is first
+  try { return JSON.parse(jsonStr) } catch (e) { /* continue */ }
+
+  // Try to repair truncated JSON by closing open brackets/braces
+  let repaired = jsonStr
+  // Remove any trailing incomplete string value
+  repaired = repaired.replace(/,\s*"[^"]*$/, '')
+  repaired = repaired.replace(/,\s*$/, '')
+
+  // Count open/close brackets and braces
+  let openBraces = 0, openBrackets = 0
+  let inString = false, escaped = false
+  for (const ch of repaired) {
+    if (escaped) { escaped = false; continue }
+    if (ch === '\\') { escaped = true; continue }
+    if (ch === '"') { inString = !inString; continue }
+    if (inString) continue
+    if (ch === '{') openBraces++
+    if (ch === '}') openBraces--
+    if (ch === '[') openBrackets++
+    if (ch === ']') openBrackets--
+  }
+
+  // Close unclosed brackets/braces
+  while (openBrackets > 0) { repaired += ']'; openBrackets-- }
+  while (openBraces > 0) { repaired += '}'; openBraces-- }
+
+  return JSON.parse(repaired)
+}
 
 async function callClaude(systemPrompt, userPrompt) {
   const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -26,10 +63,7 @@ async function callClaude(systemPrompt, userPrompt) {
 
   const data = await res.json()
   const text = data.content[0].text
-
-  const jsonMatch = text.match(/\{[\s\S]*\}/)
-  if (!jsonMatch) throw new Error('No JSON found in Claude response')
-  return JSON.parse(jsonMatch[0])
+  return repairJson(text)
 }
 
 export async function generateProgram(userProfile) {
