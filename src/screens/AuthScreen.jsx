@@ -8,17 +8,23 @@ export default function AuthScreen() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [confirmSent, setConfirmSent] = useState(false)
   const { signIn, signUp } = useAuth()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    setConfirmSent(false)
     setLoading(true)
     try {
-      const { error: authError } = isSignUp
+      const { error: authError, data } = isSignUp
         ? await signUp(email, password)
         : await signIn(email, password)
       if (authError) throw authError
+      // If signup and user needs to confirm email
+      if (isSignUp && data?.user && !data?.session) {
+        setConfirmSent(true)
+      }
     } catch (err) {
       setError(err.message)
     } finally {
@@ -64,6 +70,13 @@ export default function AuthScreen() {
 
           {error && (
             <p className="text-sm text-danger bg-danger/10 rounded-lg px-3 py-2">{error}</p>
+          )}
+
+          {confirmSent && (
+            <div className="bg-success/10 border border-success/30 rounded-lg px-3 py-3 text-center">
+              <p className="text-sm font-medium text-success">Check your email!</p>
+              <p className="text-xs text-slate-600 mt-1">We sent a confirmation link to <strong>{email}</strong>. Click it to activate your account, then come back and sign in.</p>
+            </div>
           )}
 
           <button
