@@ -82,14 +82,22 @@ async function callClaude(systemPrompt, userPrompt) {
 }
 
 export async function generateProgram(userProfile) {
-  const system = 'You are an expert strength and conditioning coach.'
+  const system = 'You are an expert strength and conditioning coach. You create highly personalized programs based on each athlete\'s unique profile, goals, body composition, and preferences.'
   const prompt = `Generate a personalized training program based on this athlete profile:
+- Name: ${userProfile.first_name || 'Athlete'}
+- Age: ${userProfile.age || 'unknown'}
+- Gender: ${userProfile.gender || 'not specified'}
+- Height: ${userProfile.height_inches ? `${Math.floor(userProfile.height_inches / 12)}'${userProfile.height_inches % 12}"` : 'unknown'}
+- Weight: ${userProfile.weight_lbs || 'unknown'} lbs
 - Goal: ${userProfile.goal}
 - Experience: ${userProfile.experience}
 - Days per week: ${userProfile.days_per_week}
 - Equipment: ${userProfile.equipment}
 - Limitations: ${(userProfile.limitations || []).join(', ') || 'None'}
+- Priority muscles: ${(userProfile.priority_muscles || []).join(', ') || 'None specified'}
+- Preferred training time: ${userProfile.training_time || 'No preference'}
 - Estimated 1RMs: Squat ${userProfile.squat_1rm || 'unknown'}lbs, Bench ${userProfile.bench_1rm || 'unknown'}lbs, Deadlift ${userProfile.deadlift_1rm || 'unknown'}lbs
+- Additional context: ${userProfile.additional_context || 'None'}
 
 Return ONLY valid JSON in this exact structure, no other text:
 {

@@ -37,6 +37,7 @@ export default function HomeScreen() {
   const [generating, setGenerating] = useState(false)
   const [genError, setGenError] = useState('')
   const [sessionDates, setSessionDates] = useState(new Set())
+  const [firstName, setFirstName] = useState('')
   const calendarRef = useRef(null)
 
   const handleGenerate = async () => {
@@ -73,12 +74,15 @@ export default function HomeScreen() {
   async function loadData() {
     setLoading(true)
     try {
-      const [streakVal, progs, sessions, weekData] = await Promise.all([
+      const [streakVal, progs, sessions, weekData, profileData] = await Promise.all([
         fetchStreak(user.id),
         fetchPrograms(user.id),
         fetchSessions(user.id),
         fetchWeekSessions(user.id),
+        supabase.from('user_profiles').select('first_name').eq('user_id', user.id).single(),
       ])
+
+      if (profileData.data?.first_name) setFirstName(profileData.data.first_name)
 
       setStreak(streakVal)
       setPrograms(progs)
@@ -138,9 +142,14 @@ export default function HomeScreen() {
       {/* Calendar Header */}
       <div className="px-4 pt-4 pb-3 border-b border-border">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-lg font-bold tracking-tight uppercase text-text">
-            {MONTHS[today.getMonth()]} '{String(today.getFullYear()).slice(2)}
-          </h1>
+          <div>
+            <h1 className="text-lg font-bold tracking-tight uppercase text-text">
+              {MONTHS[today.getMonth()]} '{String(today.getFullYear()).slice(2)}
+            </h1>
+            {firstName && (
+              <p className="text-xs text-text-secondary -mt-0.5">Hey, {firstName}</p>
+            )}
+          </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-primary" />

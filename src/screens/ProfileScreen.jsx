@@ -26,6 +26,19 @@ const EQUIPMENT = [
   { value: 'dumbbells', label: 'Dumbbells Only' },
   { value: 'bodyweight', label: 'Bodyweight Only' },
 ]
+const GENDERS = [
+  { value: 'male', label: 'Male' },
+  { value: 'female', label: 'Female' },
+  { value: 'other', label: 'Other' },
+  { value: 'prefer_not_to_say', label: 'Prefer not to say' },
+]
+const TRAINING_TIMES = [
+  { value: 'morning', label: 'Morning' },
+  { value: 'afternoon', label: 'Afternoon' },
+  { value: 'evening', label: 'Evening' },
+  { value: 'no_preference', label: 'No preference' },
+]
+const MUSCLE_GROUPS = ['Chest', 'Back', 'Shoulders', 'Arms', 'Legs', 'Core', 'Glutes']
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth()
@@ -105,8 +118,8 @@ export default function ProfileScreen() {
       </div>
 
       <div className="bg-card border border-border rounded-xl p-4 mb-4">
-        <p className="text-sm font-medium text-text">{user?.email}</p>
-        <p className="text-xs text-muted mt-1">Account</p>
+        <p className="text-sm font-medium text-text">{profile?.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : user?.email}</p>
+        <p className="text-xs text-muted mt-1">{profile?.first_name ? user?.email : 'Account'}</p>
       </div>
 
       {/* Units */}
@@ -130,7 +143,87 @@ export default function ProfileScreen() {
       {/* Fitness Profile */}
       {profile && (
         <div className="space-y-4 mb-6">
-          <h2 className="text-xs uppercase tracking-wider text-text-secondary">Fitness Profile</h2>
+          <h2 className="text-xs uppercase tracking-wider text-text-secondary">Personal Info</h2>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs uppercase tracking-wider text-text-secondary mb-1">First Name</label>
+              <input
+                type="text"
+                value={profile.first_name || ''}
+                onChange={(e) => update('first_name', e.target.value || null)}
+                className="w-full h-10 px-3 rounded-lg bg-card border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                placeholder="First"
+              />
+            </div>
+            <div>
+              <label className="block text-xs uppercase tracking-wider text-text-secondary mb-1">Last Name</label>
+              <input
+                type="text"
+                value={profile.last_name || ''}
+                onChange={(e) => update('last_name', e.target.value || null)}
+                className="w-full h-10 px-3 rounded-lg bg-card border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                placeholder="Last"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2">
+            <div>
+              <label className="block text-xs uppercase tracking-wider text-text-secondary mb-1">Age</label>
+              <input
+                type="number"
+                inputMode="numeric"
+                value={profile.age || ''}
+                onChange={(e) => update('age', e.target.value ? parseInt(e.target.value) : null)}
+                className="w-full h-10 px-3 rounded-lg bg-card border border-border text-text text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary/30"
+                placeholder="—"
+              />
+            </div>
+            <div>
+              <label className="block text-xs uppercase tracking-wider text-text-secondary mb-1">Height</label>
+              <input
+                type="text"
+                value={profile.height_inches ? `${Math.floor(profile.height_inches / 12)}'${profile.height_inches % 12}"` : ''}
+                onChange={(e) => {
+                  const match = e.target.value.match(/(\d+)'?\s*(\d*)/)
+                  if (match) update('height_inches', parseInt(match[1]) * 12 + (parseInt(match[2]) || 0))
+                }}
+                className="w-full h-10 px-3 rounded-lg bg-card border border-border text-text text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary/30"
+                placeholder={`5'10"`}
+              />
+            </div>
+            <div>
+              <label className="block text-xs uppercase tracking-wider text-text-secondary mb-1">Weight</label>
+              <input
+                type="number"
+                inputMode="decimal"
+                value={profile.weight_lbs || ''}
+                onChange={(e) => update('weight_lbs', e.target.value ? parseFloat(e.target.value) : null)}
+                className="w-full h-10 px-3 rounded-lg bg-card border border-border text-text text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary/30"
+                placeholder="lbs"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs uppercase tracking-wider text-text-secondary mb-1">Gender</label>
+            <div className="flex gap-2 flex-wrap">
+              {GENDERS.map(g => (
+                <button
+                  key={g.value}
+                  onClick={() => update('gender', g.value)}
+                  className={`h-10 px-3 rounded-lg text-sm font-medium transition-colors ${
+                    profile.gender === g.value ? 'border border-primary bg-primary-dim text-primary' : 'bg-card border border-border text-text-secondary'
+                  }`}
+                >
+                  {g.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <h2 className="text-xs uppercase tracking-wider text-text-secondary pt-2">Fitness Profile</h2>
 
           <div>
             <label className="block text-xs uppercase tracking-wider text-text-secondary mb-1">Goal</label>
@@ -218,6 +311,47 @@ export default function ProfileScreen() {
                 />
               </div>
             ))}
+          </div>
+
+          <div>
+            <label className="block text-xs uppercase tracking-wider text-text-secondary mb-1">Priority Muscles</label>
+            <div className="flex gap-2 flex-wrap">
+              {MUSCLE_GROUPS.map(m => {
+                const val = m.toLowerCase()
+                const selected = (profile.priority_muscles || []).includes(val)
+                return (
+                  <button
+                    key={val}
+                    onClick={() => {
+                      const current = profile.priority_muscles || []
+                      update('priority_muscles', selected ? current.filter(v => v !== val) : [...current, val])
+                    }}
+                    className={`h-9 px-3 rounded-lg text-xs font-medium transition-colors ${
+                      selected ? 'border border-primary bg-primary-dim text-primary' : 'bg-card border border-border text-text-secondary'
+                    }`}
+                  >
+                    {m}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs uppercase tracking-wider text-text-secondary mb-1">Training Time</label>
+            <div className="flex gap-2 flex-wrap">
+              {TRAINING_TIMES.map(t => (
+                <button
+                  key={t.value}
+                  onClick={() => update('training_time', t.value)}
+                  className={`h-10 px-3 rounded-lg text-sm font-medium transition-colors ${
+                    profile.training_time === t.value ? 'border border-primary bg-primary-dim text-primary' : 'bg-card border border-border text-text-secondary'
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <button
