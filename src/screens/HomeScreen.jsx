@@ -6,7 +6,7 @@ import { fetchPrograms, fetchProgramDetail, saveProgramToDb } from '../lib/progr
 import { fetchSessions, fetchStreak, fetchWeekSessions } from '../lib/sessionService'
 import { generateProgram } from '../lib/ai'
 import { supabase } from '../lib/supabase'
-import { Zap, Play, ChevronRight, TrendingUp } from 'lucide-react'
+import { Zap, Play, ChevronRight, TrendingUp, User } from 'lucide-react'
 import LoadingSpinner from '../components/LoadingSpinner'
 
 const DAYS_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -146,6 +146,12 @@ export default function HomeScreen() {
               <div className="w-2 h-2 rounded-full bg-primary" />
               <span className="text-xs text-text-secondary">{streak} day streak</span>
             </div>
+            <button
+              onClick={() => navigate('/profile')}
+              className="w-8 h-8 rounded-full bg-card border border-border flex items-center justify-center"
+            >
+              <User size={14} className="text-text-secondary" />
+            </button>
           </div>
         </div>
 
