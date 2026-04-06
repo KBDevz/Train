@@ -4,8 +4,10 @@ import { useUnits } from '../contexts/UnitsContext'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { startSession, finishSession, saveSessionSets, fetchLastSessionSets } from '../lib/sessionService'
 import { fetchExerciseLibrary } from '../lib/programService'
+import { generatePostWorkoutInsight, generatePreWorkoutPrimer } from '../lib/ai'
+import { saveInsight, fetchRecentSessions, fetchExerciseHistory } from '../lib/insightService'
 import { supabase } from '../lib/supabase'
-import { Check, Plus, Search, X, ChevronDown, ChevronUp, Square } from 'lucide-react'
+import { Check, Plus, Search, X, ChevronDown, ChevronUp, Square, Zap, Brain } from 'lucide-react'
 
 const CACHE_KEY = 'cadence_active_session'
 
@@ -28,6 +30,11 @@ export default function WorkoutScreen() {
   const [collapsedNotes, setCollapsedNotes] = useState({})
   const [restTime, setRestTime] = useState(0)
   const [lastSetTime, setLastSetTime] = useState(null)
+  const [primer, setPrimer] = useState(null)
+  const [primerLoading, setPrimerLoading] = useState(false)
+  const [primerDismissed, setPrimerDismissed] = useState(false)
+  const [postInsight, setPostInsight] = useState(null)
+  const [insightLoading, setInsightLoading] = useState(false)
   const timerRef = useRef(null)
   const startTimeRef = useRef(null)
   const restTimerRef = useRef(null)
@@ -58,7 +65,31 @@ export default function WorkoutScreen() {
 
     // Pre-load session data but don't start timer yet
     initSession()
+    loadPrimer()
   }, [user])
+
+  async function loadPrimer() {
+    if (!day?.workout_exercises?.length) return
+    setPrimerLoading(true)
+    try {
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single()
+      if (!profile) return
+
+      const exerciseIds = day.workout_exercises.map(we => we.exercise_id).filter(Boolean)
+      const history = await fetchExerciseHistory(user.id, exerciseIds)
+
+      const result = await generatePreWorkoutPrimer(profile, day, history)
+      setPrimer(result)
+    } catch (err) {
+      console.error('Primer failed:', err)
+    } finally {
+      setPrimerLoading(false)
+    }
+  }
 
   async function initSession() {
     try {
@@ -196,6 +227,7 @@ export default function WorkoutScreen() {
   }
 
   const handleFinish = async () => {
+    setInsightLoading(true)
     try {
       const allSets = exerciseCards.flatMap(card =>
         card.sets.map(set => ({
@@ -210,12 +242,53 @@ export default function WorkoutScreen() {
 
       await saveSessionSets(sessionId, allSets)
       await finishSession(sessionId, elapsed, feedbackRating || null, null)
-
       localStorage.removeItem(CACHE_KEY)
-      navigate('/home', { replace: true })
+
+      // Generate post-workout insight
+      try {
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single()
+
+        const recentSessions = await fetchRecentSessions(user.id, 10)
+
+        // Build current session object for the AI
+        const currentSession = {
+          duration_seconds: elapsed,
+          workout_days: { name: day?.name || 'Workout' },
+          session_sets: exerciseCards.flatMap(card =>
+            card.sets.map(set => ({
+              exercises: { name: card.exercise_name },
+              weight: set.weight ? parseFloat(set.weight) : null,
+              reps: set.reps ? parseInt(set.reps) : null,
+              completed: set.completed,
+            }))
+          ),
+          notes: null,
+        }
+
+        const result = await generatePostWorkoutInsight(profile, currentSession, recentSessions)
+        setPostInsight(result)
+
+        // Save to database
+        await saveInsight(user.id, sessionId, 'post_workout', result.insight, {
+          type: result.type,
+          priority: result.priority,
+        })
+      } catch (aiErr) {
+        console.error('Post-workout insight failed:', aiErr)
+      }
     } catch (err) {
       console.error(err)
+    } finally {
+      setInsightLoading(false)
     }
+  }
+
+  const handleDone = () => {
+    navigate('/home', { replace: true })
   }
 
   const feedbackEmojis = [
@@ -258,6 +331,40 @@ export default function WorkoutScreen() {
 
       {/* Exercise Cards */}
       <div className="flex-1 px-4 py-4 space-y-4 pb-24">
+        {/* Pre-Workout Primer */}
+        {!primerDismissed && (primerLoading || primer) && (
+          <div className="bg-card border border-primary/30 rounded-xl p-4 relative">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Brain size={16} className="text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] uppercase tracking-wider text-primary font-semibold mb-1">Coach Primer</p>
+                {primerLoading ? (
+                  <div className="flex gap-1 py-2">
+                    <span className="w-1.5 h-1.5 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1.5 h-1.5 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                ) : primer && (
+                  <>
+                    <p className="text-sm text-text leading-relaxed">{primer.primer}</p>
+                    {primer.focus_exercise && (
+                      <p className="text-xs text-primary mt-1.5">Focus: {primer.focus_exercise}</p>
+                    )}
+                  </>
+                )}
+              </div>
+              <button
+                onClick={() => setPrimerDismissed(true)}
+                className="text-muted p-1"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </div>
+        )}
+
         {exerciseCards.map((card, cardIdx) => (
           <div key={cardIdx} className="bg-card border border-border rounded-xl overflow-hidden">
             <div className="px-4 py-3 border-b border-border">
@@ -357,52 +464,100 @@ export default function WorkoutScreen() {
       {showFinish && (
         <div className="fixed inset-0 bg-bg/80 z-50 flex items-center justify-center px-6">
           <div className="bg-card border border-border rounded-2xl w-full max-w-sm p-6">
-            <h2 className="text-lg font-bold text-text mb-4">Workout Complete!</h2>
+            {/* Post-save: show insight */}
+            {postInsight || insightLoading ? (
+              <>
+                <h2 className="text-lg font-bold text-text mb-4">Session Saved</h2>
 
-            <div className="grid grid-cols-3 gap-3 mb-5">
-              <div className="text-center">
-                <p className="text-xl font-bold text-text">{formatTime(elapsed)}</p>
-                <p className="text-xs text-text-secondary">Duration</p>
-              </div>
-              <div className="text-center">
-                <p className="text-xl font-bold text-text">{convertWeight(totalVolume).toLocaleString()}</p>
-                <p className="text-xs text-text-secondary">{unitLabel}</p>
-              </div>
-              <div className="text-center">
-                <p className="text-xl font-bold text-text">{totalSetsCompleted}</p>
-                <p className="text-xs text-text-secondary">Sets</p>
-              </div>
-            </div>
+                <div className="grid grid-cols-3 gap-3 mb-5">
+                  <div className="text-center">
+                    <p className="text-xl font-bold text-text">{formatTime(elapsed)}</p>
+                    <p className="text-xs text-text-secondary">Duration</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xl font-bold text-text">{convertWeight(totalVolume).toLocaleString()}</p>
+                    <p className="text-xs text-text-secondary">{unitLabel}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xl font-bold text-text">{totalSetsCompleted}</p>
+                    <p className="text-xs text-text-secondary">Sets</p>
+                  </div>
+                </div>
 
-            <p className="text-sm font-medium text-text-secondary mb-2">How was it?</p>
-            <div className="flex gap-3 mb-5">
-              {feedbackEmojis.map((f) => (
+                {/* AI Insight */}
+                <div className="bg-bg border border-primary/20 rounded-xl p-4 mb-5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Zap size={14} className="text-primary" />
+                    <p className="text-[10px] uppercase tracking-wider text-primary font-semibold">Coach Insight</p>
+                  </div>
+                  {insightLoading ? (
+                    <div className="flex gap-1 py-2">
+                      <span className="w-1.5 h-1.5 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-1.5 h-1.5 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-1.5 h-1.5 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
+                  ) : postInsight && (
+                    <p className="text-sm text-text leading-relaxed">{postInsight.insight}</p>
+                  )}
+                </div>
+
                 <button
-                  key={f.value}
-                  onClick={() => setFeedbackRating(f.value)}
-                  className={`flex-1 py-3 rounded-xl text-center text-xl transition-colors ${
-                    feedbackRating === f.value ? 'bg-primary-dim ring-2 ring-primary' : 'bg-subtle'
-                  }`}
+                  onClick={handleDone}
+                  className="w-full h-12 bg-primary text-bg rounded-xl font-semibold"
                 >
-                  {f.emoji}
+                  Done
                 </button>
-              ))}
-            </div>
+              </>
+            ) : (
+              <>
+                <h2 className="text-lg font-bold text-text mb-4">Workout Complete!</h2>
 
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowFinish(false)}
-                className="flex-1 h-12 rounded-xl border border-border text-text font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleFinish}
-                className="flex-1 h-12 bg-primary text-bg rounded-xl font-semibold"
-              >
-                Save
-              </button>
-            </div>
+                <div className="grid grid-cols-3 gap-3 mb-5">
+                  <div className="text-center">
+                    <p className="text-xl font-bold text-text">{formatTime(elapsed)}</p>
+                    <p className="text-xs text-text-secondary">Duration</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xl font-bold text-text">{convertWeight(totalVolume).toLocaleString()}</p>
+                    <p className="text-xs text-text-secondary">{unitLabel}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xl font-bold text-text">{totalSetsCompleted}</p>
+                    <p className="text-xs text-text-secondary">Sets</p>
+                  </div>
+                </div>
+
+                <p className="text-sm font-medium text-text-secondary mb-2">How was it?</p>
+                <div className="flex gap-3 mb-5">
+                  {feedbackEmojis.map((f) => (
+                    <button
+                      key={f.value}
+                      onClick={() => setFeedbackRating(f.value)}
+                      className={`flex-1 py-3 rounded-xl text-center text-xl transition-colors ${
+                        feedbackRating === f.value ? 'bg-primary-dim ring-2 ring-primary' : 'bg-subtle'
+                      }`}
+                    >
+                      {f.emoji}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowFinish(false)}
+                    className="flex-1 h-12 rounded-xl border border-border text-text font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleFinish}
+                    className="flex-1 h-12 bg-primary text-bg rounded-xl font-semibold"
+                  >
+                    Save
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

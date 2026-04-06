@@ -165,3 +165,115 @@ Suggest a specific intervention. Return ONLY valid JSON:
 
   return callClaude(system, prompt)
 }
+
+export async function generatePostWorkoutInsight(userProfile, currentSession, recentSessions) {
+  const system = 'You are a sharp, direct strength coach reviewing an athlete\'s session.'
+
+  const sessionSummary = formatSessionForPrompt(currentSession)
+  const recentSummary = recentSessions.map(s => formatSessionForPrompt(s)).join('\n---\n')
+
+  const prompt = `Athlete profile: ${userProfile.goal} | ${userProfile.experience} | ${userProfile.days_per_week} days/week
+
+Today's session: ${sessionSummary}
+
+Recent history (last ${recentSessions.length} sessions):
+${recentSummary || 'No prior sessions'}
+
+Write ONE coaching insight about this session. Rules:
+- Maximum 2 sentences
+- Be specific — reference actual numbers from their data
+- Identify either: a positive trend, a concern, or an actionable next step
+- Never say "great job", "well done", or use generic praise
+- Tone: direct, knowledgeable, like a coach who has watched every session
+
+Return ONLY valid JSON:
+{
+  "insight": "string",
+  "type": "progress | warning | recommendation",
+  "priority": "high | medium | low"
+}`
+
+  return callClaude(system, prompt)
+}
+
+export async function generatePreWorkoutPrimer(userProfile, workoutDay, exerciseHistory) {
+  const system = 'You are a strength coach preparing an athlete for their session.'
+
+  const exerciseList = (workoutDay.workout_exercises || [])
+    .map(we => we.exercises?.name || 'Unknown')
+    .join(', ')
+
+  const historyText = Object.entries(exerciseHistory)
+    .map(([exId, sets]) => {
+      if (!sets.length) return null
+      const name = sets[0]?.exercises?.name || exId
+      const grouped = {}
+      sets.forEach(s => {
+        const date = new Date(s.sessions?.finished_at).toLocaleDateString()
+        if (!grouped[date]) grouped[date] = []
+        grouped[date].push(`${s.weight || 0}×${s.reps || 0}${s.completed ? '' : ' (missed)'}`)
+      })
+      return `${name}:\n${Object.entries(grouped).map(([d, s]) => `  ${d}: ${s.join(', ')}`).join('\n')}`
+    })
+    .filter(Boolean)
+    .join('\n')
+
+  const prompt = `Today's workout: ${workoutDay.name}
+Planned exercises: ${exerciseList}
+
+For each exercise, here is the athlete's recent performance:
+${historyText || 'No prior data for these exercises'}
+
+Athlete profile: ${userProfile.goal} | ${userProfile.experience}
+
+Write a pre-workout primer. Rules:
+- 2-3 sentences maximum
+- Lead with the most important exercise focus for today
+- Reference specific numbers (e.g. "You hit 225×5 last time at RPE 8")
+- Give one concrete target or cue for today's session
+- Never be vague or generic
+
+Return ONLY valid JSON:
+{
+  "primer": "string",
+  "focus_exercise": "string",
+  "recommended_adjustments": [
+    {
+      "exercise_name": "string",
+      "recommended_weight": number,
+      "recommended_reps": number,
+      "reasoning": "string (one short phrase)"
+    }
+  ]
+}`
+
+  return callClaude(system, prompt)
+}
+
+function formatSessionForPrompt(session) {
+  if (!session) return 'No data'
+  const sets = session.session_sets || []
+  const exercises = {}
+  sets.forEach(s => {
+    const name = s.exercises?.name || 'Unknown'
+    if (!exercises[name]) exercises[name] = []
+    exercises[name].push({
+      weight: s.weight,
+      reps: s.reps,
+      completed: s.completed,
+    })
+  })
+  const duration = session.duration_seconds ? `${Math.round(session.duration_seconds / 60)}min` : 'unknown'
+  const dayName = session.workout_days?.name || 'Session'
+  const completionRate = sets.length > 0
+    ? Math.round(sets.filter(s => s.completed).length / sets.length * 100)
+    : 0
+
+  let summary = `${dayName} (${duration}, ${completionRate}% completion)`
+  for (const [name, data] of Object.entries(exercises)) {
+    const setsStr = data.map(d => `${d.weight || 0}×${d.reps || 0}${d.completed ? '' : '(X)'}`).join(', ')
+    summary += `\n  ${name}: ${setsStr}`
+  }
+  if (session.notes) summary += `\n  Notes: ${session.notes}`
+  return summary
+}
