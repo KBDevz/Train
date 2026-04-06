@@ -54,6 +54,19 @@ function repairJson(text) {
   return JSON.parse(repaired)
 }
 
+const GOAL_LABELS = {
+  fat_loss: 'Lose Fat',
+  muscle_gain: 'Build Muscle',
+  strength: 'Gain Strength',
+  endurance: 'Build Endurance',
+  general: 'General Fitness',
+}
+
+function formatGoals(goal) {
+  const goals = Array.isArray(goal) ? goal : (goal ? [goal] : ['general'])
+  return goals.map(g => GOAL_LABELS[g] || g).join(' + ')
+}
+
 async function callClaude(systemPrompt, userPrompt) {
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -89,7 +102,7 @@ export async function generateProgram(userProfile) {
 - Gender: ${userProfile.gender || 'not specified'}
 - Height: ${userProfile.height_inches ? `${Math.floor(userProfile.height_inches / 12)}'${userProfile.height_inches % 12}"` : 'unknown'}
 - Weight: ${userProfile.weight_lbs || 'unknown'} lbs
-- Goal: ${userProfile.goal}
+- Goals: ${formatGoals(userProfile.goal)}
 - Experience: ${userProfile.experience}
 - Days per week: ${userProfile.days_per_week}
 - Equipment: ${userProfile.equipment}
@@ -172,7 +185,7 @@ export async function generatePostWorkoutInsight(userProfile, currentSession, re
   const sessionSummary = formatSessionForPrompt(currentSession)
   const recentSummary = recentSessions.map(s => formatSessionForPrompt(s)).join('\n---\n')
 
-  const prompt = `Athlete profile: ${userProfile.goal} | ${userProfile.experience} | ${userProfile.days_per_week} days/week
+  const prompt = `Athlete profile: ${formatGoals(userProfile.goal)} | ${userProfile.experience} | ${userProfile.days_per_week} days/week
 
 Today's session: ${sessionSummary}
 
@@ -224,7 +237,7 @@ Planned exercises: ${exerciseList}
 For each exercise, here is the athlete's recent performance:
 ${historyText || 'No prior data for these exercises'}
 
-Athlete profile: ${userProfile.goal} | ${userProfile.experience}
+Athlete profile: ${formatGoals(userProfile.goal)} | ${userProfile.experience}
 
 Write a pre-workout primer. Rules:
 - 2-3 sentences maximum

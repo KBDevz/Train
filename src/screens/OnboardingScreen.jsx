@@ -41,8 +41,8 @@ const STEPS = [
   },
   {
     id: 'goal',
-    messages: ["Now the important stuff.", "What's your primary training goal?"],
-    type: 'chips',
+    messages: ["Now the important stuff.", "What are your training goals? Pick all that apply."],
+    type: 'multi_chips',
     field: 'goal',
     options: [
       { value: 'fat_loss', label: 'Lose Fat' },
@@ -57,7 +57,7 @@ const STEPS = [
     messages: ["{goal_followup}"],
     type: 'text',
     field: 'goal_detail',
-    placeholder: 'e.g. 15 lbs, 185 lbs, etc.',
+    placeholder: 'e.g. lose 15 lbs, squat 315, run a 5K...',
     skip: true,
   },
   {
@@ -154,15 +154,20 @@ const STEPS = [
   },
 ]
 
-function getGoalFollowup(goal) {
-  switch (goal) {
-    case 'muscle_gain': return "Nice. How many lbs of muscle are you looking to put on?"
-    case 'fat_loss': return "What's your target weight?"
-    case 'strength': return "Any specific lift numbers you're chasing? (e.g. 315 squat)"
-    case 'endurance': return "What's your endurance goal? (e.g. run a 5K, improve stamina)"
-    case 'general': return "Any specific outcomes you're hoping for?"
-    default: return "Tell me more about what you're aiming for."
+function getGoalFollowup(goals) {
+  const arr = Array.isArray(goals) ? goals : [goals]
+  if (arr.length === 0) return "Tell me more about what you're aiming for."
+  if (arr.length === 1) {
+    switch (arr[0]) {
+      case 'muscle_gain': return "Nice. How many lbs of muscle are you looking to put on?"
+      case 'fat_loss': return "What's your target weight?"
+      case 'strength': return "Any specific lift numbers you're chasing? (e.g. 315 squat)"
+      case 'endurance': return "What's your endurance goal? (e.g. run a 5K, improve stamina)"
+      case 'general': return "Any specific outcomes you're hoping for?"
+      default: return "Tell me more about what you're aiming for."
+    }
   }
+  return "You've got multiple goals — tell me any specific targets or numbers you're chasing."
 }
 
 export default function OnboardingScreen({ onComplete }) {
@@ -191,7 +196,7 @@ export default function OnboardingScreen({ onComplete }) {
     gender: '',
     height_inches: null,
     weight_lbs: null,
-    goal: '',
+    goal: [],
     goal_detail: '',
     target_weight_lbs: null,
     priority_muscles: [],
@@ -376,7 +381,7 @@ export default function OnboardingScreen({ onComplete }) {
         height_inches: finalProfile.height_inches || null,
         weight_lbs: finalProfile.weight_lbs || null,
         target_weight_lbs: finalProfile.target_weight_lbs || null,
-        goal: finalProfile.goal || 'general',
+        goal: finalProfile.goal?.length > 0 ? finalProfile.goal : ['general'],
         experience: finalProfile.experience || 'beginner',
         days_per_week: finalProfile.days_per_week || 4,
         equipment: finalProfile.equipment || 'full_gym',

@@ -46,7 +46,9 @@ export default function CoachScreen() {
 
       if (prof) {
         const goalLabels = { fat_loss: 'Fat Loss', muscle_gain: 'Muscle Gain', strength: 'Strength', endurance: 'Endurance', general: 'General Fitness' }
-        setGoalSummary(`${goalLabels[prof.goal] || prof.goal} · ${prof.experience} · ${prof.days_per_week} days/week`)
+        const goals = Array.isArray(prof.goal) ? prof.goal : (prof.goal ? [prof.goal] : ['general'])
+        const goalText = goals.map(g => goalLabels[g] || g).join(' + ')
+        setGoalSummary(`${goalText} · ${prof.experience} · ${prof.days_per_week} days/week`)
       }
 
       if (progs.length > 0) {

@@ -47,7 +47,7 @@ export default function ProfileScreen() {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [originalGoal, setOriginalGoal] = useState('')
+  const [originalGoal, setOriginalGoal] = useState([])
 
   useEffect(() => {
     if (!user) return
@@ -66,7 +66,7 @@ export default function ProfileScreen() {
   const handleSave = async () => {
     if (!profile) return
 
-    const goalChanged = profile.goal !== originalGoal
+    const goalChanged = JSON.stringify(profile.goal) !== JSON.stringify(originalGoal)
     if (goalChanged) {
       if (!confirm('Updating your goal will regenerate your program. Continue?')) {
         update('goal', originalGoal)
@@ -226,19 +226,26 @@ export default function ProfileScreen() {
           <h2 className="text-xs uppercase tracking-wider text-text-secondary pt-2">Fitness Profile</h2>
 
           <div>
-            <label className="block text-xs uppercase tracking-wider text-text-secondary mb-1">Goal</label>
-            <div className="space-y-1.5">
-              {GOALS.map(g => (
-                <button
-                  key={g.value}
-                  onClick={() => update('goal', g.value)}
-                  className={`w-full h-11 rounded-xl border text-left px-4 text-sm font-medium transition-colors ${
-                    profile.goal === g.value ? 'border-primary bg-primary-dim text-primary' : 'border-border bg-card text-text-secondary'
-                  }`}
-                >
-                  {g.label}
-                </button>
-              ))}
+            <label className="block text-xs uppercase tracking-wider text-text-secondary mb-1">Goals</label>
+            <div className="flex flex-wrap gap-2">
+              {GOALS.map(g => {
+                const goals = Array.isArray(profile.goal) ? profile.goal : (profile.goal ? [profile.goal] : [])
+                const selected = goals.includes(g.value)
+                return (
+                  <button
+                    key={g.value}
+                    onClick={() => {
+                      const current = Array.isArray(profile.goal) ? profile.goal : (profile.goal ? [profile.goal] : [])
+                      update('goal', selected ? current.filter(v => v !== g.value) : [...current, g.value])
+                    }}
+                    className={`h-10 px-4 rounded-xl border text-sm font-medium transition-colors ${
+                      selected ? 'border-primary bg-primary-dim text-primary' : 'border-border bg-card text-text-secondary'
+                    }`}
+                  >
+                    {g.label}
+                  </button>
+                )
+              })}
             </div>
           </div>
 
